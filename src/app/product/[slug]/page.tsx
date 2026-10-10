@@ -96,8 +96,15 @@ async function ProductContent({ params }: { params: PageProps<"/product/[slug]">
           </span>
           <div className="min-w-0 flex-1">
             <h1 className="text-3xl leading-9 font-bold">{nameBn}</h1>
-            <p className="text-sm leading-5">
-              প্রতি {unitLabel(unit)} · {categoryNameBn}
+            <p className="flex flex-wrap items-center gap-2 text-sm leading-5">
+              <span>প্রতি {unitLabel(unit)}</span>
+              <span aria-hidden>·</span>
+              <Link
+                href={`/category/${category}`}
+                className="rounded-full bg-primary-soft px-2.5 py-0.5 text-xs font-medium text-primary hover:bg-primary hover:text-primary-content"
+              >
+                {product.categoryIcon} {categoryNameBn}
+              </Link>
             </p>
             <p className="mt-2 text-sm leading-5">
               গতকালের তুলনায় আজ দাম <span className="font-semibold">{trend}</span>
