@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { buttonVariants } from "@heroui/styles";
-import { getBanglaDate } from "@/lib/format";
+import { getBanglaDate } from "@/lib/date";
 
 export default async function Hero() {
   const date = await getBanglaDate();

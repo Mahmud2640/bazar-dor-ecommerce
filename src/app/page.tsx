@@ -1,12 +1,15 @@
+import { Suspense } from "react";
 import Hero from "@/components/hero";
+import HomeProducts from "@/components/home-products";
+import ProductsSkeleton from "@/components/products-skeleton";
 
 export default function Home() {
   return (
-    <div className="mx-auto w-full max-w-[1152px] px-4 py-6">
+    <div className="mx-auto flex w-full max-w-[1152px] flex-col gap-10 px-4 py-6">
       <Hero />
-      <section id="all-products" className="scroll-mt-4 pt-10">
-        <h2 className="text-xl font-bold">সব পণ্য</h2>
-      </section>
+      <Suspense fallback={<ProductsSkeleton />}>
+        <HomeProducts />
+      </Suspense>
     </div>
   );
 }

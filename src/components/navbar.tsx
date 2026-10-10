@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getCategories } from "@/lib/api";
-import { getBanglaDate } from "@/lib/format";
+import { getBanglaDate } from "@/lib/date";
 import CategoryNav from "./category-nav";
 import UserMenu from "./user-menu";
 
