@@ -1,110 +1,110 @@
 "use client";
 
+import { Button, FieldError, Input, Label, TextField } from "@heroui/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import toast from "react-hot-toast";
-import { buttonVariants } from "@heroui/styles";
-import { useI18n } from "@/i18n/provider";
-import { signUp } from "@/lib/auth-client";
-import { safeRedirect } from "@/lib/redirect";
-import { useSearchParam } from "@/lib/use-search-param";
-import Divider from "./divider";
-import FormField from "./form-field";
+import type { Lang } from "@/data/texts";
+import { texts } from "@/data/texts";
+import { authClient } from "@/lib/auth-client";
 import SocialButtons from "./social-buttons";
 
-type Errors = Partial<Record<"name" | "email" | "password" | "confirm", string>>;
+type Props = {
+  lang: Lang;
+  callbackUrl: string; // the page to open after signing up
+};
 
-export default function SignUpForm() {
-  const { lang, dict, href } = useI18n();
-  const t = dict.auth.signup;
+export default function SignUpForm({ lang, callbackUrl }: Props) {
+  const t = texts[lang];
   const router = useRouter();
-  const callbackUrl = safeRedirect(useSearchParam("callbackUrl"), lang);
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<Errors>({});
 
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const form = new FormData(e.currentTarget);
-    const name = String(form.get("name") ?? "").trim();
-    const email = String(form.get("email") ?? "").trim();
-    const password = String(form.get("password") ?? "");
-    const confirm = String(form.get("confirm") ?? "");
+  // one text for each field, "" means no error
+  const [nameError, setNameError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [confirmError, setConfirmError] = useState("");
 
-    const next: Errors = {};
-    if (!name) next.name = t.nameRequired;
-    if (!email) next.email = t.emailRequired;
-    if (password.length < 8) next.password = t.passwordShort;
-    if (confirm !== password) next.confirm = t.passwordMismatch;
-    setErrors(next);
-    if (Object.keys(next).length) return;
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
 
+    // 1) check the fields
+    const newNameError = name ? "" : t.nameRequired;
+    const newEmailError = email ? "" : t.emailRequired;
+    const newPasswordError = password.length >= 8 ? "" : t.passwordShort;
+    const newConfirmError = confirmPassword === password ? "" : t.passwordMismatch;
+    setNameError(newNameError);
+    setEmailError(newEmailError);
+    setPasswordError(newPasswordError);
+    setConfirmError(newConfirmError);
+    if (newNameError || newEmailError || newPasswordError || newConfirmError) return;
+
+    // 2) create the account with Better Auth
     setLoading(true);
-    const { error } = await signUp.email({ name, email, password });
+    const { error } = await authClient.signUp.email({ name, email, password });
     setLoading(false);
 
     if (error) {
-      toast.error(
-        error.code === "USER_ALREADY_EXISTS" || error.status === 422 ? t.exists : t.failed,
-      );
+      // 422 means this email is already used
+      toast.error(error.status === 422 ? t.emailExists : t.signUpFailed);
       return;
     }
-    toast.success(t.success);
+
+    // 3) the new user is signed in already, go to the next page
+    toast.success(t.signUpSuccess);
     router.push(callbackUrl);
     router.refresh();
   }
 
-  const signInHref =
-    callbackUrl === `/${lang}`
-      ? href("/signin")
-      : `${href("/signin")}?callbackUrl=${encodeURIComponent(callbackUrl)}`;
-
   return (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
-      <FormField
-        label={t.name}
-        name="name"
-        autoComplete="name"
-        placeholder={t.namePlaceholder}
-        error={errors.name}
-      />
-      <FormField
-        label={dict.auth.email}
-        name="email"
-        type="email"
-        autoComplete="email"
-        placeholder="you@example.com"
-        error={errors.email}
-      />
-      <FormField
-        label={dict.auth.password}
-        name="password"
+      <TextField value={name} onChange={setName} isInvalid={nameError !== ""}>
+        <Label className="leading-[21px]">{t.nameLabel}</Label>
+        <Input className="h-10" placeholder={t.namePlaceholder} />
+        <FieldError>{nameError}</FieldError>
+      </TextField>
+
+      <TextField type="email" value={email} onChange={setEmail} isInvalid={emailError !== ""}>
+        <Label className="leading-[21px]">{t.email}</Label>
+        <Input className="h-10" placeholder="you@example.com" />
+        <FieldError>{emailError}</FieldError>
+      </TextField>
+
+      <TextField type="password" value={password} onChange={setPassword} isInvalid={passwordError !== ""}>
+        <Label className="leading-[21px]">{t.password}</Label>
+        <Input className="h-10" placeholder={t.passwordPlaceholder} />
+        <FieldError>{passwordError}</FieldError>
+      </TextField>
+
+      <TextField
         type="password"
-        autoComplete="new-password"
-        placeholder={dict.auth.passwordPlaceholder}
-        error={errors.password}
-      />
-      <FormField
-        label={t.confirm}
-        name="confirm"
-        type="password"
-        autoComplete="new-password"
-        placeholder={t.confirmPlaceholder}
-        error={errors.confirm}
-      />
-      <button
-        type="submit"
-        disabled={loading}
-        className={`${buttonVariants({ variant: "primary", size: "md", fullWidth: true })} h-10`}
+        value={confirmPassword}
+        onChange={setConfirmPassword}
+        isInvalid={confirmError !== ""}
       >
-        {loading ? dict.common.pleaseWait : t.submit}
-      </button>
-      <Divider label={dict.common.or} />
-      <SocialButtons callbackURL={callbackUrl} />
-      <p className="text-center text-sm leading-5">
+        <Label className="leading-[21px]">{t.confirmPassword}</Label>
+        <Input className="h-10" placeholder={t.confirmPlaceholder} />
+        <FieldError>{confirmError}</FieldError>
+      </TextField>
+
+      <Button type="submit" fullWidth isDisabled={loading} className="h-10">
+        {loading ? t.pleaseWait : t.signUpTitle}
+      </Button>
+
+      <p className="text-center text-xs">{t.or}</p>
+
+      <SocialButtons lang={lang} callbackUrl={callbackUrl} />
+
+      <p className="text-center text-sm">
         {t.haveAccount}{" "}
-        <Link href={signInHref} className="text-primary hover:underline">
-          {t.signInLink}
+        <Link href="/signin" className="text-accent hover:underline">
+          {t.goSignIn}
         </Link>
       </p>
     </form>

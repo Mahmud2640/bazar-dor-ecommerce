@@ -1,44 +1,37 @@
 "use client";
 
+import { Button } from "@heroui/react";
 import Image from "next/image";
-import { useState } from "react";
 import toast from "react-hot-toast";
-import { useI18n } from "@/i18n/provider";
-import { signIn } from "@/lib/auth-client";
+import type { Lang } from "@/data/texts";
+import { texts } from "@/data/texts";
+import { authClient } from "@/lib/auth-client";
 
-export default function SocialButtons({ callbackURL }: { callbackURL: string }) {
-  const { dict } = useI18n();
-  const [loading, setLoading] = useState<string | null>(null);
+type Props = {
+  lang: Lang;
+  callbackUrl: string; // the page to open after signing in
+};
 
-  const providers = [
-    { id: "google", label: dict.auth.google, icon: "/icons/google.svg" },
-    { id: "github", label: dict.auth.github, icon: "/icons/github.svg" },
-  ] as const;
+// "Continue with Google" and "Continue with GitHub" buttons
+export default function SocialButtons({ lang, callbackUrl }: Props) {
+  const t = texts[lang];
 
-  async function handleClick(provider: "google" | "github") {
-    setLoading(provider);
-    const { error } = await signIn.social({ provider, callbackURL });
-    // on success the browser is redirected to the provider, so we only handle errors
-    if (error) {
-      toast.error(dict.auth.socialError);
-      setLoading(null);
-    }
+  async function handleSocialSignIn(provider: "google" | "github") {
+    // if everything is fine the browser goes to Google/GitHub, so we only check the error
+    const { error } = await authClient.signIn.social({ provider, callbackURL: callbackUrl });
+    if (error) toast.error(t.socialError);
   }
 
   return (
     <div className="flex flex-col gap-2 sm:flex-row">
-      {providers.map((p) => (
-        <button
-          key={p.id}
-          type="button"
-          disabled={loading !== null}
-          onClick={() => handleClick(p.id)}
-          className="flex h-10 min-w-0 shrink-0 items-center sm:flex-1 sm:shrink justify-center gap-1.5 rounded-lg border border-base-300 bg-base-100 px-2 text-sm font-semibold transition-colors hover:bg-base-200 disabled:opacity-60 sm:px-4"
-        >
-          <Image src={p.icon} alt="" width={14} height={14} />
-          <span>{p.label}</span>
-        </button>
-      ))}
+      <Button variant="outline" className="h-10 flex-1" onPress={() => handleSocialSignIn("google")}>
+        <Image src="/icons/google.svg" alt="" width={14} height={14} />
+        {t.googleButton}
+      </Button>
+      <Button variant="outline" className="h-10 flex-1" onPress={() => handleSocialSignIn("github")}>
+        <Image src="/icons/github.svg" alt="" width={14} height={14} />
+        {t.githubButton}
+      </Button>
     </div>
   );
 }

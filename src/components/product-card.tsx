@@ -1,54 +1,53 @@
-"use client";
-
+import { Card, Chip } from "@heroui/react";
 import Link from "next/link";
-import { useI18n } from "@/i18n/provider";
-import { fmt } from "@/i18n/format";
-import { productName } from "@/i18n/localize";
-import { formatChange, formatNumber, unitLabel } from "@/lib/format";
+import type { Lang } from "@/data/texts";
+import { texts } from "@/data/texts";
+import { changeText, formatPrice, unitName } from "@/lib/format";
+import { getProductName } from "@/lib/names";
 import type { Product } from "@/types";
 
-const changeColor = {
-  up: "text-error",
-  down: "text-success",
-  flat: "text-base-content",
-} as const;
+type Props = {
+  product: Product;
+  lang: Lang;
+};
 
-export default function ProductCard({ product }: { product: Product }) {
-  const { lang, dict, href } = useI18n();
-  const { slug, image, unit, today, change } = product;
+export default function ProductCard({ product, lang }: Props) {
+  const t = texts[lang];
+
+  // price up = red, price down = green
+  let color: "danger" | "success" | "default" = "default";
+  if (product.change.dir === "up") color = "danger";
+  if (product.change.dir === "down") color = "success";
 
   return (
-    <Link
-      href={href(`/product/${slug}`)}
-      className="block rounded-2xl border border-base-300 bg-base-100 transition-shadow hover:shadow-md focus-visible:outline-2 focus-visible:outline-primary"
-    >
-      <div className="flex flex-col gap-3 p-4">
+    // the whole card opens the product details page
+    <Link href={`/product/${product.slug}`}>
+      <Card className="gap-3 rounded-2xl border border-border p-4 shadow-none hover:shadow-md">
+        {/* emoji, name and unit */}
         <div className="flex items-start gap-3">
-          <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-base-200 text-2xl">
-            {image}
+          <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-background text-2xl">
+            {product.image}
           </span>
           <div className="min-w-0">
-            <p className="truncate text-base leading-6 font-semibold">{productName(product, lang)}</p>
-            <p className="text-xs leading-4">
-              {fmt(dict.common.perUnit, { unit: unitLabel(unit, lang) })}
+            <p className="truncate text-base leading-6 font-semibold">{getProductName(product, lang)}</p>
+            <p className="text-xs leading-4">{t.perUnit(unitName(product.unit, lang))}</p>
+          </div>
+        </div>
+
+        {/* price and change */}
+        <div className="flex items-end justify-between">
+          <div>
+            <p className="text-xs leading-4">{t.todayPrice}</p>
+            <p className="flex h-7 items-baseline gap-1">
+              <span className="text-xl font-bold">{formatPrice(product.today, lang)}</span>
+              <span className="text-sm font-medium">{t.currency}</span>
             </p>
           </div>
+          <Chip size="sm" color={color} variant="soft">
+            {changeText(product.change, lang)}
+          </Chip>
         </div>
-        <div className="flex items-end justify-between">
-          <div className="flex flex-col">
-            <span className="text-xs leading-4">{dict.home.todayPrice}</span>
-            <span className="flex h-7 items-baseline gap-1">
-              <span className="text-xl leading-7 font-bold">{formatNumber(today, lang)}</span>
-              <span className="text-sm leading-5 font-medium">{dict.common.currency}</span>
-            </span>
-          </div>
-          <span
-            className={`flex items-center rounded-xl bg-base-200 px-2 py-1 text-xs leading-4 font-semibold ${changeColor[change.dir]}`}
-          >
-            {formatChange(change, lang)}
-          </span>
-        </div>
-      </div>
+      </Card>
     </Link>
   );
 }

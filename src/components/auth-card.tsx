@@ -1,24 +1,29 @@
+import { Card } from "@heroui/react";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import type { Lang } from "@/data/texts";
+import { texts } from "@/data/texts";
 
 type Props = {
   title: string;
   subtitle: string;
-  backLabel: string;
-  homeHref: string;
-  children: ReactNode;
+  lang: Lang;
+  children: ReactNode; // the form
 };
 
-export default function AuthCard({ title, subtitle, backLabel, homeHref, children }: Props) {
+// The box used by the sign in and sign up pages
+export default function AuthCard({ title, subtitle, lang, children }: Props) {
   return (
-    <div className="mx-auto flex w-full max-w-[448px] flex-col gap-6 px-4 py-10">
-      <div className="flex flex-col items-center gap-1 text-center">
+    <div className="mx-auto flex max-w-[448px] flex-col gap-6 px-4 py-10">
+      <div className="text-center">
         <h1 className="text-2xl leading-8 font-bold">{title}</h1>
         <p className="text-sm leading-5">{subtitle}</p>
       </div>
-      <div className="rounded-2xl border border-base-300 bg-base-100 p-6">{children}</div>
-      <Link href={homeHref} className="text-center text-sm leading-5 hover:text-primary">
-        {backLabel}
+
+      <Card className="rounded-2xl border border-border p-6 shadow-none">{children}</Card>
+
+      <Link href="/" className="text-center text-sm hover:text-accent">
+        {texts[lang].backHome}
       </Link>
     </div>
   );

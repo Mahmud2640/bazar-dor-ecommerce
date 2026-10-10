@@ -1,23 +1,25 @@
+import { buttonVariants } from "@heroui/react";
 import Link from "next/link";
-import { buttonVariants } from "@heroui/styles";
+import type { Lang } from "@/data/texts";
+import { texts } from "@/data/texts";
 
 type Props = {
-  code: string;
+  code: string; // the big text, for example 404
   title: string;
-  message: string;
-  backLabel: string;
-  homeHref: string;
+  text: string;
+  lang: Lang;
 };
 
-// 404-style block with a link back to the home page
-export default function EmptyState({ code, title, message, backLabel, homeHref }: Props) {
+// A message with a button that goes back to the home page.
+// Used for the 404 page and when a category is empty or missing.
+export default function EmptyState({ code, title, text, lang }: Props) {
   return (
-    <div className="flex flex-col items-center gap-3 rounded-2xl border border-base-300 bg-base-100 px-4 py-16 text-center">
-      <p className="text-6xl font-bold text-primary">{code}</p>
+    <div className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-16 text-center">
+      <p className="text-6xl font-bold text-accent">{code}</p>
       <h1 className="text-2xl leading-8 font-bold">{title}</h1>
-      <p className="text-sm">{message}</p>
-      <Link href={homeHref} className={`${buttonVariants({ variant: "primary", size: "md" })} mt-2 h-10`}>
-        {backLabel}
+      <p className="text-sm">{text}</p>
+      <Link href="/" className={`${buttonVariants({ variant: "primary" })} mt-2 h-10`}>
+        {texts[lang].backHomeButton}
       </Link>
     </div>
   );

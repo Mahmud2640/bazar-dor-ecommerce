@@ -10,53 +10,54 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # BazarDor (বাজার দর) — Project Rules
 
-Bangla-language market price tracker. Build it to match the Figma design and the assignment brief:
+Bangla and English market price tracker. Build it to match the Figma design and the assignment brief:
 - Figma: https://www.figma.com/design/wNhWeMFAjA6tIsNHtI8M0q/Bazardor-_-Assignment-07 (file key `wNhWeMFAjA6tIsNHtI8M0q`; frames: Home, Home - User Menu Open, Sign In, Sign Up, Profile, Category, Product Details)
 - Brief: https://github.com/ProgrammingHero1/B14-A7-Bazar-Dor
 - Read the Figma with the Figma MCP (`get_design_context`, `get_screenshot`) before building each page. Do not guess spacing, colors or fonts.
 
+## Most important rule: keep the code simple (junior level)
+This is a student assignment. The owner knows: Next.js App Router, HeroUI, Tailwind CSS, basic Better Auth and a basic MongoDB connection. The code must be easy for them to read and explain.
+- Use plain React: `useState`, props, `async` server components, `fetch`. No custom hooks, no context, no `useMemo`/`useCallback`, no `useSyncExternalStore`, no regular expressions unless really needed.
+- No clever tricks: no `"use cache"`, no `cacheComponents`, no proxy/middleware, no generics, no `as const` tricks, no deep ternary chains. Prefer a short `if` and `for`.
+- Write short comments that explain what and why in simple English.
+- If something is hard to explain in one sentence, find a simpler way.
+
 ## Stack (do not swap these)
-- **Next.js App Router** + TypeScript. Server Components by default; add `"use client"` only where state or browser APIs are needed.
-- **Tailwind CSS v4** for all styling. No CSS modules, no inline style objects, no other CSS framework. Put design tokens (colors, fonts) in `@theme` in `src/app/globals.css`.
-- **HeroUI** for UI components (buttons, inputs, select, chips, skeleton, card, dropdown, navbar). Check the HeroUI docs for the installed version before using its API. Only hand-build a component when HeroUI has no equivalent.
-- **Better Auth** for authentication, with the **MongoDB adapter**. Email/password plus Google and GitHub social login. No email verification or password reset.
-- **MongoDB** for the auth data (users, sessions, accounts). Use one shared cached client in `src/lib/mongodb.ts`. Prices and categories come from the external API, not from Mongo.
-- `react-hot-toast` for toasts.
+- **Next.js App Router** + TypeScript. Pages are server components; add `"use client"` only for buttons, forms and other interactive parts.
+- **Tailwind CSS v4** for styling. Figma colors live in `src/app/globals.css` as HeroUI variables (`--accent`, `--surface`, `--border`...). Use classes like `bg-surface`, `text-accent`, `border-border`, `text-danger`, `text-success`.
+- **HeroUI v3** for components: `Button`, `Card`, `Chip`, `Skeleton`, `Avatar`, `Dropdown`, `Select`, `TextField` + `Label` + `Input` + `FieldError`. Buttons use `onPress`, not `onClick`. A link that looks like a button uses `buttonVariants()` on a Next.js `Link`.
+- **Better Auth** with the **MongoDB adapter** (`src/lib/auth.ts`). Email/password plus Google and GitHub. No email verification or password reset.
+- **MongoDB Atlas** only for users, sessions and accounts (`src/lib/mongodb.ts`). Prices and categories come from the API.
+- `react-hot-toast` for messages.
 
 ## Data
-- Base URL: `https://api.api-store.workers.dev/api/bazardor` (fallback `https://api.abcz.workers.dev/api/bazardor`). Keep it in `NEXT_PUBLIC_API_BASE_URL`.
-- Endpoints: `/products`, `/products?category=`, `/products/{id}`, `/categories`, `/categories/{slug}`.
-- All fetching goes through typed helpers in `src/lib/api.ts`. Components never call `fetch` on the URL directly.
-- Show prices in Bengali digits (a `toBn()` helper in `src/lib/format.ts`). Sort and compare on the numeric value, never on the formatted string.
-
-## Required features
-- Navbar (Bangla date, category links with active state, sign in/up or profile/sign out) and a scrolling price ticker.
-- Hero with a CTA that smooth-scrolls to all products.
-- Home: top 6 risers, top 6 fallers, all-products grid. Cards open the detail page.
-- `/product/[slug]`: login required. Show min/max/average and per-market prices. Redirect to `/signin` with a toast when logged out.
-- Category page: sort (default, low to high, high to low), skeleton loading, and an empty state with a link home.
-- `/signin`, `/signup`, `/profile` (update name through Better Auth).
-- Footer, custom 404 page, skeletons on Home and Category.
-- Fully responsive (mobile, tablet, desktop), including navbar, ticker, hero and grid.
+- The API link is in `NEXT_PUBLIC_API_BASE_URL`; the second link from the brief is the fallback. All API calls are in `src/lib/api.ts`.
+- Check the signed-in user in server pages with `auth.api.getSession({ headers: await headers() })`.
+- Show prices with the helpers in `src/lib/format.ts`. Sort on the real number (`src/lib/sort.ts`), never on the text.
 
 ## Languages (Bangla and English)
-- The site has two languages, `bn` (default) and `en`. Every page lives under `src/app/[lang]` and every link must keep the prefix (`/${lang}/...`, or `href()` from `useI18n()` in client components).
-- Never hard-code visible text. Put it in both objects in `src/i18n/dictionaries.ts` (the English object must match the Bangla shape). Use `fmt()` for `{placeholders}`.
-- Server components call `getDictionary(lang)`; client components use `useI18n()`. Dictionaries must stay plain data (no functions) because they are passed to the client.
-- Format numbers with `src/lib/format.ts` (`formatNumber`, `localizeDigits`, ...): Bengali digits for `bn`, normal digits for `en`. Sort and compare on raw numbers only.
-- The API only returns Bangla names. English names for products, categories, markets and divisions come from `src/i18n/data-en.ts` via `src/i18n/localize.ts`; add an entry there when new items appear.
-- `src/proxy.ts` redirects URLs without a language prefix. Do not rename it to `middleware.ts` (Next 16 uses `proxy`).
+- Two languages: `bn` (default) and `en`. The choice is saved in a cookie named `lang`.
+- All visible words are in `src/data/texts.ts` (the English object must have the same names as the Bangla one). Use `const t = texts[lang]`.
+- Server components get the language with `await getLang()` (`src/lib/language.ts`). Client components receive `lang` as a prop. The language buttons set the cookie and call `router.refresh()`.
+- English names of products, categories, markets and divisions are in `src/data/english-names.ts` (the API only has Bangla). Add a name there when a new item appears.
+
+## Required features
+- Navbar (date, category links with active state, sign in/up or user menu) and a moving price ticker.
+- Hero with a button that scrolls smoothly to all products.
+- Home: top 6 price rises, top 6 falls, all products with search, category buttons and sort.
+- `/product/[slug]`: login required, min/max/average price and a table of market prices.
+- `/category/[slug]`: sort, skeleton while loading, empty state with a link home.
+- `/signin`, `/signup`, `/profile` (update the name), footer, 404 page, error page.
+- Skeletons are `loading.tsx` files. Fully responsive.
 
 ## Code conventions
-- Folder layout: `src/app` (routes), `src/components` (shared UI), `src/i18n` (language config, dictionaries, helpers), `src/lib` (api, auth, mongodb, format), `src/types`.
-- Files kebab-case, components PascalCase, no `any`.
-- Keep components small; extract repeated markup (Product Card, Form Field, Filter Chip) into `src/components`.
-- Secrets live in `.env.local` only (`MONGODB_URI`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `GOOGLE_CLIENT_ID/SECRET`, `GITHUB_CLIENT_ID/SECRET`). Never commit them. Keep `.env.example` with the names and no values.
-- Use `next/image` and `next/link`. Add alt text and visible focus styles.
+- Folders: `src/app` (pages), `src/components`, `src/lib` (api, auth, mongodb, format, names, sort, language), `src/data` (texts, english names), `src/types`.
+- File names kebab-case, component names PascalCase, no `any`.
+- Secrets only in `.env.local` (never commit). Keep `.env.example` with names and no values.
+- Use `next/image` and `next/link`. Add `alt` text.
 
 ## Workflow
-- Work like a careful junior dev: one page or feature at a time, then run `npm run lint` and `npm run build` before committing.
-- Make small commits with meaningful messages (brief needs at least 8), e.g. `feat: add navbar and ticker`.
-- Deploy target is Vercel; dynamic routes must work after a reload.
-- Keep the README current: project name, description, technologies, at least 5 features.
-- Ask before adding a dependency that is not in the stack above.
+- One page or feature at a time. Run `npm run lint` and `npm run build` before each commit.
+- Small commits with clear messages (the brief needs at least 8).
+- Deploy to Vercel. Keep the README up to date.
+- Ask before adding a package that is not listed above.

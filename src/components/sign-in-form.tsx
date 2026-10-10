@@ -1,94 +1,90 @@
 "use client";
 
+import { Button, FieldError, Input, Label, TextField } from "@heroui/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import toast from "react-hot-toast";
-import { buttonVariants } from "@heroui/styles";
-import { useI18n } from "@/i18n/provider";
-import { signIn } from "@/lib/auth-client";
-import { safeRedirect } from "@/lib/redirect";
-import { useSearchParam } from "@/lib/use-search-param";
-import Divider from "./divider";
-import FormField from "./form-field";
+import type { Lang } from "@/data/texts";
+import { texts } from "@/data/texts";
+import { authClient } from "@/lib/auth-client";
 import SocialButtons from "./social-buttons";
 
-export default function SignInForm() {
-  const { lang, dict, href } = useI18n();
+type Props = {
+  lang: Lang;
+  message?: string; // "login" when a protected page sent the visitor here
+  callbackUrl: string; // the page to open after signing in
+};
+
+export default function SignInForm({ lang, message, callbackUrl }: Props) {
+  const t = texts[lang];
   const router = useRouter();
-  const callbackUrl = safeRedirect(useSearchParam("callbackUrl"), lang);
-  const notice = useSearchParam("notice");
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
-  // protected pages send people here with ?notice=login
+  // the visitor tried to open a page that needs login, so tell them
   useEffect(() => {
-    if (notice === "login") {
-      toast.error(dict.auth.loginRequired, { id: "login-required" });
+    if (message === "login") {
+      toast.error(t.loginRequired, { id: "login-required" });
     }
-  }, [notice, dict.auth.loginRequired]);
+  }, [message, t.loginRequired]);
 
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const form = new FormData(e.currentTarget);
-    const email = String(form.get("email") ?? "").trim();
-    const password = String(form.get("password") ?? "");
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
 
-    const next: typeof errors = {};
-    if (!email) next.email = dict.auth.signin.emailRequired;
-    if (!password) next.password = dict.auth.signin.passwordRequired;
-    setErrors(next);
-    if (Object.keys(next).length) return;
+    // 1) check the fields
+    const newEmailError = email ? "" : t.emailRequired;
+    const newPasswordError = password ? "" : t.passwordRequired;
+    setEmailError(newEmailError);
+    setPasswordError(newPasswordError);
+    if (newEmailError || newPasswordError) return;
 
+    // 2) sign in with Better Auth
     setLoading(true);
-    const { error } = await signIn.email({ email, password });
+    const { error } = await authClient.signIn.email({ email, password });
     setLoading(false);
 
     if (error) {
-      toast.error(dict.auth.signin.invalid);
+      toast.error(t.wrongLogin);
       return;
     }
-    toast.success(dict.auth.signin.success);
+
+    // 3) go to the next page
+    toast.success(t.signInSuccess);
     router.push(callbackUrl);
     router.refresh();
   }
 
-  const signUpHref =
-    callbackUrl === `/${lang}`
-      ? href("/signup")
-      : `${href("/signup")}?callbackUrl=${encodeURIComponent(callbackUrl)}`;
-
   return (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
-      <FormField
-        label={dict.auth.email}
-        name="email"
-        type="email"
-        autoComplete="email"
-        placeholder="you@example.com"
-        error={errors.email}
-      />
-      <FormField
-        label={dict.auth.password}
-        name="password"
-        type="password"
-        autoComplete="current-password"
-        placeholder={dict.auth.passwordPlaceholder}
-        error={errors.password}
-      />
-      <button
-        type="submit"
-        disabled={loading}
-        className={`${buttonVariants({ variant: "primary", size: "md", fullWidth: true })} h-10`}
-      >
-        {loading ? dict.common.pleaseWait : dict.auth.signin.submit}
-      </button>
-      <Divider label={dict.common.or} />
-      <SocialButtons callbackURL={callbackUrl} />
-      <p className="text-center text-sm leading-5">
-        {dict.auth.signin.noAccount}{" "}
-        <Link href={signUpHref} className="text-primary hover:underline">
-          {dict.auth.signin.signUpLink}
+      <TextField type="email" value={email} onChange={setEmail} isInvalid={emailError !== ""}>
+        <Label className="leading-[21px]">{t.email}</Label>
+        <Input className="h-10" placeholder="you@example.com" />
+        <FieldError>{emailError}</FieldError>
+      </TextField>
+
+      <TextField type="password" value={password} onChange={setPassword} isInvalid={passwordError !== ""}>
+        <Label className="leading-[21px]">{t.password}</Label>
+        <Input className="h-10" placeholder={t.passwordPlaceholder} />
+        <FieldError>{passwordError}</FieldError>
+      </TextField>
+
+      <Button type="submit" fullWidth isDisabled={loading} className="h-10">
+        {loading ? t.pleaseWait : t.signInTitle}
+      </Button>
+
+      <p className="text-center text-xs">{t.or}</p>
+
+      <SocialButtons lang={lang} callbackUrl={callbackUrl} />
+
+      <p className="text-center text-sm">
+        {t.noAccount}{" "}
+        <Link href="/signup" className="text-accent hover:underline">
+          {t.goSignUp}
         </Link>
       </p>
     </form>

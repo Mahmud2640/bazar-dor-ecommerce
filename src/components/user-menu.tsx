@@ -1,110 +1,76 @@
 "use client";
 
+import { Avatar, Dropdown, Label, buttonVariants } from "@heroui/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { buttonVariants } from "@heroui/styles";
-import { useI18n } from "@/i18n/provider";
-import { signOut, useSession } from "@/lib/auth-client";
+import type { Lang } from "@/data/texts";
+import { texts } from "@/data/texts";
+import { authClient } from "@/lib/auth-client";
 
-export default function UserMenu() {
-  const { dict, href } = useI18n();
-  const { data: session, isPending } = useSession();
+type Props = {
+  user: { name: string; email: string; image?: string | null } | null;
+  lang: Lang;
+};
+
+export default function UserMenu({ user, lang }: Props) {
+  const t = texts[lang];
   const router = useRouter();
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
 
-  // close the dropdown when clicking anywhere else
-  useEffect(() => {
-    function onClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener("mousedown", onClick);
-    return () => document.removeEventListener("mousedown", onClick);
-  }, []);
-
-  if (isPending) {
-    return <div className="h-10 w-24 animate-pulse rounded-lg bg-base-200 sm:w-28" />;
-  }
-
-  if (!session) {
+  // nobody is signed in: show the Sign in and Sign up buttons
+  if (!user) {
     return (
-      <div className="flex items-center gap-2">
-        <Link
-          href={href("/signin")}
-          className={`${buttonVariants({ variant: "outline", size: "md" })} h-10 max-sm:h-8 max-sm:px-3 max-sm:text-xs`}
-        >
-          {dict.nav.signIn}
+      <div className="flex gap-2">
+        <Link href="/signin" className={`${buttonVariants({ variant: "outline" })} h-10`}>
+          {t.signIn}
         </Link>
-        <Link
-          href={href("/signup")}
-          className={`${buttonVariants({ variant: "primary", size: "md" })} h-10 max-sm:h-8 max-sm:px-3 max-sm:text-xs`}
-        >
-          {dict.nav.signUp}
+        <Link href="/signup" className={`${buttonVariants({ variant: "primary" })} h-10`}>
+          {t.signUp}
         </Link>
       </div>
     );
   }
 
-  const { name, email, image } = session.user;
-
   async function handleSignOut() {
-    await signOut();
-    setOpen(false);
-    toast.success(dict.nav.signedOut);
-    router.push(href("/"));
+    await authClient.signOut();
+    toast.success(t.signedOut);
+    router.push("/");
     router.refresh();
   }
 
-  return (
-    <div ref={ref} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-haspopup="menu"
-        aria-expanded={open}
-        className="flex h-10 items-center gap-2 rounded-lg px-[17px] hover:bg-base-200"
-      >
-        {image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={image} alt="" className="size-9 rounded-[10px] object-cover" />
-        ) : (
-          <span className="flex size-9 items-center justify-center rounded-[10px] bg-primary font-semibold text-primary-content">
-            {name.charAt(0).toUpperCase()}
-          </span>
-        )}
-        <span className="hidden text-sm font-medium sm:inline">{name.split(" ")[0]}</span>
-        <span className="text-xs opacity-60">▾</span>
-      </button>
+  // called when the user clicks an item of the menu
+  function handleAction(key: string | number) {
+    if (key === "profile") router.push("/profile");
+    if (key === "signout") handleSignOut();
+  }
 
-      {open && (
-        <div
-          role="menu"
-          className="absolute right-0 z-50 mt-2 w-64 max-w-[calc(100vw-2rem)] rounded-2xl border border-base-300 bg-base-100 p-2 shadow-xl"
-        >
-          <div className="overflow-hidden px-3 py-2">
-            <p className="truncate text-sm leading-[21px] font-semibold">{name}</p>
-            <p className="truncate text-xs leading-4 opacity-70">{email}</p>
-          </div>
-          <Link
-            href={href("/profile")}
-            role="menuitem"
-            onClick={() => setOpen(false)}
-            className="flex h-[33px] items-center rounded-lg px-3 text-sm leading-[21px] hover:bg-base-200"
-          >
-            👤 {dict.meta.profile}
-          </Link>
-          <button
-            type="button"
-            role="menuitem"
-            onClick={handleSignOut}
-            className="flex h-[33px] w-full items-center rounded-lg px-3 text-left text-sm leading-[21px] text-error hover:bg-base-200"
-          >
-            ↩ {dict.nav.signOut}
-          </button>
+  return (
+    <Dropdown>
+      <Dropdown.Trigger className="flex h-10 items-center gap-2 rounded-lg px-3">
+        <Avatar size="sm">
+          {user.image && <Avatar.Image alt={user.name} src={user.image} />}
+          <Avatar.Fallback>{user.name.charAt(0).toUpperCase()}</Avatar.Fallback>
+        </Avatar>
+        <span className="hidden text-sm font-medium sm:inline">{user.name.split(" ")[0]}</span>
+        <span className="text-xs opacity-60">▾</span>
+      </Dropdown.Trigger>
+
+      <Dropdown.Popover className="min-w-64">
+        {/* name and email */}
+        <div className="px-3 py-2">
+          <p className="truncate text-sm font-semibold">{user.name}</p>
+          <p className="truncate text-xs opacity-70">{user.email}</p>
         </div>
-      )}
-    </div>
+
+        <Dropdown.Menu onAction={handleAction}>
+          <Dropdown.Item id="profile" textValue={t.myProfile}>
+            <Label>👤 {t.myProfile}</Label>
+          </Dropdown.Item>
+          <Dropdown.Item id="signout" textValue={t.signOut} variant="danger">
+            <Label>↩ {t.signOut}</Label>
+          </Dropdown.Item>
+        </Dropdown.Menu>
+      </Dropdown.Popover>
+    </Dropdown>
   );
 }

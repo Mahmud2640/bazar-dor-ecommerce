@@ -1,35 +1,49 @@
+import { headers } from "next/headers";
 import Link from "next/link";
-import { getDictionary } from "@/i18n/dictionaries";
-import type { Locale } from "@/i18n/config";
+import { texts } from "@/data/texts";
 import { getCategories } from "@/lib/api";
-import { getLocalizedDate } from "@/lib/date";
-import CategoryNav from "./category-nav";
-import LanguageSwitcher from "./language-switcher";
+import { auth } from "@/lib/auth";
+import { getToday } from "@/lib/format";
+import { getLang } from "@/lib/language";
+import CategoryLinks from "./category-links";
+import LanguageToggle from "./language-toggle";
 import UserMenu from "./user-menu";
 
-export default async function Navbar({ lang }: { lang: Locale }) {
-  const dict = getDictionary(lang);
-  const [categories, date] = await Promise.all([getCategories(), getLocalizedDate(lang)]);
+export default async function Navbar() {
+  const lang = await getLang();
+  const t = texts[lang];
+  const categories = await getCategories();
+
+  // who is signed in? session is null when nobody is signed in
+  const session = await auth.api.getSession({ headers: await headers() });
+  const user = session
+    ? { name: session.user.name, email: session.user.email, image: session.user.image }
+    : null;
 
   return (
-    <header className="border-b border-base-300 bg-base-100">
-      <div className="mx-auto flex w-full max-w-[1152px] flex-wrap items-center justify-between gap-x-3 gap-y-2 px-4 py-3">
-        <Link href={`/${lang}`} className="flex shrink-0 items-center gap-2">
-          <span className="flex size-10 items-center justify-center rounded-xl bg-primary text-lg text-primary-content">
+    <header className="border-b border-border bg-surface">
+      <div className="mx-auto flex max-w-[1152px] flex-wrap items-center justify-between gap-2 px-4 py-3">
+        {/* logo and today's date */}
+        <Link href="/" className="flex items-center gap-2">
+          <span className="flex size-10 items-center justify-center rounded-xl bg-accent text-lg text-accent-foreground">
             🛒
           </span>
           <span className="flex flex-col whitespace-nowrap">
-            <span className="text-xl leading-7 font-bold tracking-[-0.5px]">{dict.meta.siteName}</span>
-            <span className="text-xs leading-4">{date}</span>
+            <span className="text-xl leading-7 font-bold">{t.siteName}</span>
+            <span className="text-xs leading-4">{getToday(lang)}</span>
           </span>
         </Link>
+
+        {/* language buttons and sign in / user menu */}
         <div className="ml-auto flex items-center gap-2">
-          <LanguageSwitcher />
-          <UserMenu />
+          <LanguageToggle lang={lang} />
+          <UserMenu user={user} lang={lang} />
         </div>
       </div>
-      <div className="border-t border-base-200">
-        <CategoryNav categories={categories} />
+
+      {/* category links */}
+      <div className="border-t border-separator">
+        <CategoryLinks categories={categories} lang={lang} />
       </div>
     </header>
   );
