@@ -8,9 +8,9 @@ function SkeletonGrid({ count }: { count: number }) {
   );
 }
 
-export default function ProductsSkeleton() {
+export default function ProductsSkeleton({ label }: { label: string }) {
   return (
-    <div className="flex flex-col gap-10" aria-busy="true" aria-label="লোড হচ্ছে">
+    <div className="flex flex-col gap-10" aria-busy="true" aria-label={label}>
       <div className="flex flex-col gap-3">
         <div className="h-7 w-40 animate-pulse rounded bg-base-300" />
         <SkeletonGrid count={6} />

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import toast from "react-hot-toast";
 import { buttonVariants } from "@heroui/styles";
+import { useI18n } from "@/i18n/provider";
 import { signUp } from "@/lib/auth-client";
 import { safeRedirect } from "@/lib/redirect";
 import { useSearchParam } from "@/lib/use-search-param";
@@ -15,8 +16,10 @@ import SocialButtons from "./social-buttons";
 type Errors = Partial<Record<"name" | "email" | "password" | "confirm", string>>;
 
 export default function SignUpForm() {
+  const { lang, dict, href } = useI18n();
+  const t = dict.auth.signup;
   const router = useRouter();
-  const callbackUrl = safeRedirect(useSearchParam("callbackUrl"));
+  const callbackUrl = safeRedirect(useSearchParam("callbackUrl"), lang);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
 
@@ -29,10 +32,10 @@ export default function SignUpForm() {
     const confirm = String(form.get("confirm") ?? "");
 
     const next: Errors = {};
-    if (!name) next.name = "নাম দিন";
-    if (!email) next.email = "ইমেইল দিন";
-    if (password.length < 8) next.password = "পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে";
-    if (confirm !== password) next.confirm = "পাসওয়ার্ড মিলছে না";
+    if (!name) next.name = t.nameRequired;
+    if (!email) next.email = t.emailRequired;
+    if (password.length < 8) next.password = t.passwordShort;
+    if (confirm !== password) next.confirm = t.passwordMismatch;
     setErrors(next);
     if (Object.keys(next).length) return;
 
@@ -42,28 +45,31 @@ export default function SignUpForm() {
 
     if (error) {
       toast.error(
-        error.code === "USER_ALREADY_EXISTS" || error.status === 422
-          ? "এই ইমেইল দিয়ে আগেই অ্যাকাউন্ট আছে"
-          : (error.message ?? "অ্যাকাউন্ট তৈরি করা যায়নি"),
+        error.code === "USER_ALREADY_EXISTS" || error.status === 422 ? t.exists : t.failed,
       );
       return;
     }
-    toast.success("অ্যাকাউন্ট তৈরি হয়েছে");
+    toast.success(t.success);
     router.push(callbackUrl);
     router.refresh();
   }
 
+  const signInHref =
+    callbackUrl === `/${lang}`
+      ? href("/signin")
+      : `${href("/signin")}?callbackUrl=${encodeURIComponent(callbackUrl)}`;
+
   return (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
       <FormField
-        label="নাম"
+        label={t.name}
         name="name"
         autoComplete="name"
-        placeholder="যেমন: রহিম উদ্দিন"
+        placeholder={t.namePlaceholder}
         error={errors.name}
       />
       <FormField
-        label="ইমেইল"
+        label={dict.auth.email}
         name="email"
         type="email"
         autoComplete="email"
@@ -71,19 +77,19 @@ export default function SignUpForm() {
         error={errors.email}
       />
       <FormField
-        label="পাসওয়ার্ড"
+        label={dict.auth.password}
         name="password"
         type="password"
         autoComplete="new-password"
-        placeholder="কমপক্ষে ৮ অক্ষর"
+        placeholder={dict.auth.passwordPlaceholder}
         error={errors.password}
       />
       <FormField
-        label="পাসওয়ার্ড নিশ্চিত করুন"
+        label={t.confirm}
         name="confirm"
         type="password"
         autoComplete="new-password"
-        placeholder="আবার লিখুন"
+        placeholder={t.confirmPlaceholder}
         error={errors.confirm}
       />
       <button
@@ -91,17 +97,14 @@ export default function SignUpForm() {
         disabled={loading}
         className={buttonVariants({ variant: "primary", size: "md", fullWidth: true })}
       >
-        {loading ? "অপেক্ষা করুন…" : "অ্যাকাউন্ট তৈরি করুন"}
+        {loading ? dict.common.pleaseWait : t.submit}
       </button>
-      <Divider label="অথবা" />
+      <Divider label={dict.common.or} />
       <SocialButtons callbackURL={callbackUrl} />
       <p className="text-center text-sm leading-5">
-        অ্যাকাউন্ট আছে?{" "}
-        <Link
-          href={callbackUrl === "/" ? "/signin" : `/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`}
-          className="text-primary hover:underline"
-        >
-          সাইন ইন করুন
+        {t.haveAccount}{" "}
+        <Link href={signInHref} className="text-primary hover:underline">
+          {t.signInLink}
         </Link>
       </p>
     </form>

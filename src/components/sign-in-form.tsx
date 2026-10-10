@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import toast from "react-hot-toast";
 import { buttonVariants } from "@heroui/styles";
+import { useI18n } from "@/i18n/provider";
 import { signIn } from "@/lib/auth-client";
 import { safeRedirect } from "@/lib/redirect";
 import { useSearchParam } from "@/lib/use-search-param";
@@ -13,8 +14,9 @@ import FormField from "./form-field";
 import SocialButtons from "./social-buttons";
 
 export default function SignInForm() {
+  const { lang, dict, href } = useI18n();
   const router = useRouter();
-  const callbackUrl = safeRedirect(useSearchParam("callbackUrl"));
+  const callbackUrl = safeRedirect(useSearchParam("callbackUrl"), lang);
   const notice = useSearchParam("notice");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
@@ -22,9 +24,9 @@ export default function SignInForm() {
   // protected pages send people here with ?notice=login
   useEffect(() => {
     if (notice === "login") {
-      toast.error("এই পেজ দেখতে আগে সাইন ইন করুন", { id: "login-required" });
+      toast.error(dict.auth.loginRequired, { id: "login-required" });
     }
-  }, [notice]);
+  }, [notice, dict.auth.loginRequired]);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -33,8 +35,8 @@ export default function SignInForm() {
     const password = String(form.get("password") ?? "");
 
     const next: typeof errors = {};
-    if (!email) next.email = "ইমেইল দিন";
-    if (!password) next.password = "পাসওয়ার্ড দিন";
+    if (!email) next.email = dict.auth.signin.emailRequired;
+    if (!password) next.password = dict.auth.signin.passwordRequired;
     setErrors(next);
     if (Object.keys(next).length) return;
 
@@ -43,18 +45,23 @@ export default function SignInForm() {
     setLoading(false);
 
     if (error) {
-      toast.error("ইমেইল বা পাসওয়ার্ড ঠিক নয়");
+      toast.error(dict.auth.signin.invalid);
       return;
     }
-    toast.success("সাইন ইন সফল হয়েছে");
+    toast.success(dict.auth.signin.success);
     router.push(callbackUrl);
     router.refresh();
   }
 
+  const signUpHref =
+    callbackUrl === `/${lang}`
+      ? href("/signup")
+      : `${href("/signup")}?callbackUrl=${encodeURIComponent(callbackUrl)}`;
+
   return (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
       <FormField
-        label="ইমেইল"
+        label={dict.auth.email}
         name="email"
         type="email"
         autoComplete="email"
@@ -62,29 +69,26 @@ export default function SignInForm() {
         error={errors.email}
       />
       <FormField
-        label="পাসওয়ার্ড"
+        label={dict.auth.password}
         name="password"
         type="password"
         autoComplete="current-password"
-        placeholder="কমপক্ষে ৮ অক্ষর"
+        placeholder={dict.auth.passwordPlaceholder}
         error={errors.password}
       />
       <button
         type="submit"
         disabled={loading}
-        className={`${buttonVariants({ variant: "primary", size: "md", fullWidth: true })}`}
+        className={buttonVariants({ variant: "primary", size: "md", fullWidth: true })}
       >
-        {loading ? "অপেক্ষা করুন…" : "সাইন ইন"}
+        {loading ? dict.common.pleaseWait : dict.auth.signin.submit}
       </button>
-      <Divider label="অথবা" />
+      <Divider label={dict.common.or} />
       <SocialButtons callbackURL={callbackUrl} />
       <p className="text-center text-sm leading-5">
-        অ্যাকাউন্ট নেই?{" "}
-        <Link
-          href={callbackUrl === "/" ? "/signup" : `/signup?callbackUrl=${encodeURIComponent(callbackUrl)}`}
-          className="text-primary hover:underline"
-        >
-          সাইন আপ করুন
+        {dict.auth.signin.noAccount}{" "}
+        <Link href={signUpHref} className="text-primary hover:underline">
+          {dict.auth.signin.signUpLink}
         </Link>
       </p>
     </form>

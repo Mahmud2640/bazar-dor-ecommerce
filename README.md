@@ -14,7 +14,8 @@ Built for Programming Hero Assignment 07 from the [Figma design](https://www.fig
 3. **Category pages** – each category lists its products with a sort dropdown (default, low to high, high to low), skeleton loading and a 404-style empty state.
 4. **Protected product details** – signed-in users see the lowest, highest and average price, plus a table of prices by market. Signed-out visitors are redirected to sign in with a toast.
 5. **Authentication** – email/password sign up and sign in, Google and GitHub login, a profile page and a form to update your name, built with Better Auth.
-6. **Responsive and polished** – works on mobile, tablet and desktop, with Bengali digits for prices, loading skeletons, toast messages and a custom 404 page.
+6. **Two languages (Bangla and English)** – a language switch in the header changes every page, message, date and number (Bengali digits in Bangla, normal digits in English). The URL carries the language (`/bn/...` and `/en/...`), and the choice is remembered for next time.
+7. **Responsive and polished** – works on mobile, tablet and desktop, with loading skeletons, toast messages and a custom 404 page.
 
 ## Technologies
 
@@ -25,7 +26,13 @@ Built for Programming Hero Assignment 07 from the [Figma design](https://www.fig
 - [MongoDB](https://www.mongodb.com) for users, sessions and accounts
 - [react-hot-toast](https://react-hot-toast.com) for notifications
 
-Price and category data come from the public BazarDor API (`/products`, `/categories`).
+Price and category data come from the public BazarDor API (`/products`, `/categories`). The API only has Bangla names, so the English names of products, categories, markets and divisions are in `src/i18n/data-en.ts`.
+
+## Languages
+
+- Routes live under `src/app/[lang]` (`/bn` and `/en`). `src/proxy.ts` sends a URL without a language to the saved choice, then the browser language, then Bangla.
+- All text is in `src/i18n/dictionaries.ts` (one object per language). To add or change text, edit both objects.
+- Server components call `getDictionary(lang)`. Client components use the `useI18n()` hook.
 
 ## Getting started
 

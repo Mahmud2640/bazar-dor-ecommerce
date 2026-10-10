@@ -39,8 +39,16 @@ Bangla-language market price tracker. Build it to match the Figma design and the
 - Footer, custom 404 page, skeletons on Home and Category.
 - Fully responsive (mobile, tablet, desktop), including navbar, ticker, hero and grid.
 
+## Languages (Bangla and English)
+- The site has two languages, `bn` (default) and `en`. Every page lives under `src/app/[lang]` and every link must keep the prefix (`/${lang}/...`, or `href()` from `useI18n()` in client components).
+- Never hard-code visible text. Put it in both objects in `src/i18n/dictionaries.ts` (the English object must match the Bangla shape). Use `fmt()` for `{placeholders}`.
+- Server components call `getDictionary(lang)`; client components use `useI18n()`. Dictionaries must stay plain data (no functions) because they are passed to the client.
+- Format numbers with `src/lib/format.ts` (`formatNumber`, `localizeDigits`, ...): Bengali digits for `bn`, normal digits for `en`. Sort and compare on raw numbers only.
+- The API only returns Bangla names. English names for products, categories, markets and divisions come from `src/i18n/data-en.ts` via `src/i18n/localize.ts`; add an entry there when new items appear.
+- `src/proxy.ts` redirects URLs without a language prefix. Do not rename it to `middleware.ts` (Next 16 uses `proxy`).
+
 ## Code conventions
-- Folder layout: `src/app` (routes), `src/components` (shared UI), `src/lib` (api, auth, mongodb, format), `src/types`.
+- Folder layout: `src/app` (routes), `src/components` (shared UI), `src/i18n` (language config, dictionaries, helpers), `src/lib` (api, auth, mongodb, format), `src/types`.
 - Files kebab-case, components PascalCase, no `any`.
 - Keep components small; extract repeated markup (Product Card, Form Field, Filter Chip) into `src/components`.
 - Secrets live in `.env.local` only (`MONGODB_URI`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `GOOGLE_CLIENT_ID/SECRET`, `GITHUB_CLIENT_ID/SECRET`). Never commit them. Keep `.env.example` with the names and no values.

@@ -1,23 +1,32 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import CategoryProducts from "@/components/category-products";
 import EmptyState from "@/components/empty-state";
+import type { Locale } from "@/i18n/config";
+import { getDictionary } from "@/i18n/dictionaries";
+import { fmt } from "@/i18n/format";
+import { categoryName } from "@/i18n/localize";
+import { resolveLang } from "@/i18n/server";
 import { getCategories, getProducts } from "@/lib/api";
-import { toBn } from "@/lib/format";
+import { localizeDigits } from "@/lib/format";
+
+type Params = PageProps<"/[lang]/category/[slug]">["params"];
 
 export async function generateStaticParams() {
   const categories = await getCategories();
   return categories.map((c) => ({ slug: c.slug }));
 }
 
-export async function generateMetadata({ params }: PageProps<"/category/[slug]">) {
+export async function generateMetadata({ params }: PageProps<"/[lang]/category/[slug]">): Promise<Metadata> {
   const { slug } = await params;
+  const lang = await resolveLang(params);
   const category = (await getCategories()).find((c) => c.slug === slug);
-  return { title: category ? `${category.nameBn} | বাজার দর` : "পাওয়া যায়নি | বাজার দর" };
+  return { title: category ? categoryName(category.slug, category.nameBn, lang) : getDictionary(lang).notFound.title };
 }
 
-function CategorySkeleton() {
+function CategorySkeleton({ label }: { label: string }) {
   return (
-    <div className="flex flex-col gap-6" aria-busy="true" aria-label="লোড হচ্ছে">
+    <div className="flex flex-col gap-6" aria-busy="true" aria-label={label}>
       <div className="h-[94px] animate-pulse rounded-2xl border border-base-300 bg-base-100" />
       <div className="h-[66px] animate-pulse rounded-2xl border border-base-300 bg-base-100" />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -29,16 +38,20 @@ function CategorySkeleton() {
   );
 }
 
-async function CategoryContent({ params }: { params: PageProps<"/category/[slug]">["params"] }) {
+async function CategoryContent({ params, lang }: { params: Params; lang: Locale }) {
   const { slug } = await params;
+  const dict = getDictionary(lang);
   const categories = await getCategories();
   const category = categories.find((c) => c.slug === slug);
 
   if (!category) {
     return (
       <EmptyState
-        title="ক্যাটাগরি পাওয়া যায়নি"
-        message="আপনি যে ক্যাটাগরিটি খুঁজছেন তা নেই বা সরিয়ে ফেলা হয়েছে।"
+        code={dict.notFound.code}
+        title={dict.category.notFoundTitle}
+        message={dict.category.notFoundMessage}
+        backLabel={dict.common.backHomeButton}
+        homeHref={`/${lang}`}
       />
     );
   }
@@ -51,9 +64,11 @@ async function CategoryContent({ params }: { params: PageProps<"/category/[slug]
         <div className="flex items-center gap-3">
           <span className="text-4xl leading-10">{category.icon}</span>
           <div>
-            <h1 className="text-2xl leading-8 font-bold">{category.nameBn}</h1>
+            <h1 className="text-2xl leading-8 font-bold">
+              {categoryName(category.slug, category.nameBn, lang)}
+            </h1>
             <p className="text-sm leading-5">
-              {toBn(products.length)}টি পণ্যের আজকের দাম ও পরিবর্তন
+              {fmt(dict.category.summary, { n: localizeDigits(products.length, lang) })}
             </p>
           </div>
         </div>
@@ -61,9 +76,11 @@ async function CategoryContent({ params }: { params: PageProps<"/category/[slug]
 
       {products.length === 0 ? (
         <EmptyState
-          code="০"
-          title="কোনো পণ্য পাওয়া যায়নি"
-          message="এই ক্যাটাগরিতে এখন কোনো পণ্য নেই।"
+          code={dict.notFound.emptyCode}
+          title={dict.category.emptyTitle}
+          message={dict.category.emptyMessage}
+          backLabel={dict.common.backHomeButton}
+          homeHref={`/${lang}`}
         />
       ) : (
         <CategoryProducts products={products} />
@@ -72,11 +89,13 @@ async function CategoryContent({ params }: { params: PageProps<"/category/[slug]
   );
 }
 
-export default function CategoryPage({ params }: PageProps<"/category/[slug]">) {
+export default async function CategoryPage({ params }: PageProps<"/[lang]/category/[slug]">) {
+  const lang = await resolveLang(params);
+
   return (
     <div className="mx-auto w-full max-w-[1152px] px-4 py-6">
-      <Suspense fallback={<CategorySkeleton />}>
-        <CategoryContent params={params} />
+      <Suspense fallback={<CategorySkeleton label={getDictionary(lang).common.loading} />}>
+        <CategoryContent params={params} lang={lang} />
       </Suspense>
     </div>
   );

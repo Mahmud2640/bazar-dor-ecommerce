@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { buttonVariants } from "@heroui/styles";
+import { useI18n } from "@/i18n/provider";
 import { signOut, useSession } from "@/lib/auth-client";
 
 export default function UserMenu() {
+  const { dict, href } = useI18n();
   const { data: session, isPending } = useSession();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -23,17 +25,23 @@ export default function UserMenu() {
   }, []);
 
   if (isPending) {
-    return <div className="h-10 w-28 animate-pulse rounded-lg bg-base-200" />;
+    return <div className="h-10 w-24 animate-pulse rounded-lg bg-base-200 sm:w-28" />;
   }
 
   if (!session) {
     return (
       <div className="flex items-center gap-2">
-        <Link href="/signin" className={buttonVariants({ variant: "outline", size: "md" })}>
-          সাইন ইন
+        <Link
+          href={href("/signin")}
+          className={`${buttonVariants({ variant: "outline", size: "md" })} max-sm:h-8 max-sm:px-3 max-sm:text-xs`}
+        >
+          {dict.nav.signIn}
         </Link>
-        <Link href="/signup" className={buttonVariants({ variant: "primary", size: "md" })}>
-          সাইন আপ
+        <Link
+          href={href("/signup")}
+          className={`${buttonVariants({ variant: "primary", size: "md" })} max-sm:h-8 max-sm:px-3 max-sm:text-xs`}
+        >
+          {dict.nav.signUp}
         </Link>
       </div>
     );
@@ -44,8 +52,8 @@ export default function UserMenu() {
   async function handleSignOut() {
     await signOut();
     setOpen(false);
-    toast.success("সাইন আউট হয়েছে");
-    router.push("/");
+    toast.success(dict.nav.signedOut);
+    router.push(href("/"));
     router.refresh();
   }
 
@@ -76,12 +84,12 @@ export default function UserMenu() {
           className="absolute right-0 z-50 mt-2 w-48 rounded-xl border border-base-300 bg-base-100 p-1 shadow-lg"
         >
           <Link
-            href="/profile"
+            href={href("/profile")}
             role="menuitem"
             onClick={() => setOpen(false)}
             className="block rounded-lg px-3 py-2 text-sm hover:bg-base-200"
           >
-            প্রোফাইল
+            {dict.nav.profile}
           </Link>
           <button
             type="button"
@@ -89,7 +97,7 @@ export default function UserMenu() {
             onClick={handleSignOut}
             className="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-base-200"
           >
-            সাইন আউট
+            {dict.nav.signOut}
           </button>
         </div>
       )}

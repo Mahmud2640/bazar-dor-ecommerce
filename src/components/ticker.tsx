@@ -1,7 +1,11 @@
+import { getDictionary } from "@/i18n/dictionaries";
+import type { Locale } from "@/i18n/config";
+import { productName } from "@/i18n/localize";
 import { getProducts } from "@/lib/api";
 import { formatChange, formatPrice } from "@/lib/format";
 
-export default async function Ticker() {
+export default async function Ticker({ lang }: { lang: Locale }) {
+  const dict = getDictionary(lang);
   const products = await getProducts();
 
   // Rendered twice so the loop looks seamless when the track slides by 50%.
@@ -11,7 +15,7 @@ export default async function Ticker() {
     <div className="group overflow-hidden border-b border-base-300 bg-base-100">
       <div
         className="animate-ticker flex w-max group-hover:[animation-play-state:paused]"
-        aria-label="আজকের দামের তালিকা"
+        aria-label={dict.nav.ticker}
       >
         {items.map((p, i) => (
           <div
@@ -20,12 +24,12 @@ export default async function Ticker() {
             aria-hidden={i >= products.length}
           >
             <span>{p.image}</span>
-            <span className="font-medium">{p.nameBn}</span>
-            <span>{formatPrice(p.today, p.unit)}</span>
+            <span className="font-medium">{productName(p, lang)}</span>
+            <span>{formatPrice(p.today, p.unit, lang, dict.common.currency)}</span>
             <span
               className={`font-semibold ${p.change.dir === "up" ? "text-error" : "text-success"}`}
             >
-              {formatChange(p.change)}
+              {formatChange(p.change, lang)}
             </span>
           </div>
         ))}
