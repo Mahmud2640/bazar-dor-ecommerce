@@ -27,6 +27,8 @@ const bn = {
     signOut: "সাইন আউট",
     signedOut: "সাইন আউট হয়েছে",
     ticker: "আজকের দামের তালিকা",
+    tickerPause: "দামের তালিকা থামান",
+    tickerPlay: "দামের তালিকা চালু করুন",
     language: "ভাষা পরিবর্তন করুন",
   },
   hero: {
@@ -171,6 +173,8 @@ const en: Dictionary = {
     signOut: "Sign out",
     signedOut: "You have been signed out",
     ticker: "Today's price list",
+    tickerPause: "Pause price list",
+    tickerPlay: "Play price list",
     language: "Change language",
   },
   hero: {

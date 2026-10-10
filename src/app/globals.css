@@ -30,7 +30,8 @@
   --color-primary-soft: var(--primary-soft);
   --color-success: var(--success);
   --color-error: var(--error);
-  --animate-ticker: ticker 40s linear infinite;
+  /* the real duration is set per render from the number of items (see ticker.tsx) */
+  --animate-ticker: ticker 120s linear infinite;
 }
 
 @keyframes ticker {
