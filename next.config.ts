@@ -1,13 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  experimental: {
-    agentFeedback: true,
-  },
-  cacheComponents: true,
-  partialPrefetching: true,
-  reactCompiler: true,
+  // this rule makes Tailwind CSS work with Turbopack (it came with the starter project)
   turbopack: {
     rules: {
       "*.css": {

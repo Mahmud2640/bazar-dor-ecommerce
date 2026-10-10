@@ -3,27 +3,27 @@ import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { nextCookies } from "better-auth/next-js";
 import { client, db } from "./mongodb";
 
-// Atlas (mongodb+srv or a replicaSet in the URI) supports transactions, so a sign-up that writes
-// the user and the account either fully succeeds or fully rolls back. A standalone local MongoDB
-// cannot run transactions, so we leave `client` out there.
-const supportsTransactions = /^mongodb\+srv:|[?&]replicaSet=/.test(process.env.MONGODB_URI ?? "");
-
-const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET } = process.env;
-
+// Better Auth saves users, sessions and accounts in MongoDB
 export const auth = betterAuth({
-  database: mongodbAdapter(db, supportsTransactions ? { client } : undefined),
+  database: mongodbAdapter(db, { client }),
+
+  // sign in with email and password
   emailAndPassword: {
     enabled: true,
   },
-  // a provider is only switched on when both of its keys are set
+
+  // sign in with Google and GitHub (the keys are in .env.local)
   socialProviders: {
-    ...(GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET
-      ? { google: { clientId: GOOGLE_CLIENT_ID, clientSecret: GOOGLE_CLIENT_SECRET } }
-      : {}),
-    ...(GITHUB_CLIENT_ID && GITHUB_CLIENT_SECRET
-      ? { github: { clientId: GITHUB_CLIENT_ID, clientSecret: GITHUB_CLIENT_SECRET } }
-      : {}),
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+    },
+    github: {
+      clientId: process.env.GITHUB_CLIENT_ID as string,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+    },
   },
-  // nextCookies must stay last so server actions can set auth cookies
+
+  // this plugin must be the last one
   plugins: [nextCookies()],
 });

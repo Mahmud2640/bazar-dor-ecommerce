@@ -1,43 +1,52 @@
-import type { Locale } from "@/i18n/config";
+import type { Lang } from "@/data/texts";
 
-const BN_DIGITS = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
+const banglaDigits = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
 
-// Turns 148 or "2.1" into "১৪৮" / "২.১". Display only, never use it for sorting.
-export function toBn(value: number | string): string {
-  return String(value).replace(/\d/g, (d) => BN_DIGITS[Number(d)]);
+// 148 -> "১৪৮"  (only for showing a number, never use it for sorting)
+export function toBangla(value: number | string) {
+  return String(value).replace(/\d/g, (digit) => banglaDigits[Number(digit)]);
 }
 
-// Bengali digits for Bangla, normal digits for English
-export function localizeDigits(value: number | string, lang: Locale): string {
-  return lang === "bn" ? toBn(value) : String(value);
+// Bangla digits in Bangla, normal digits in English
+export function showNumber(value: number | string, lang: Lang) {
+  return lang === "bn" ? toBangla(value) : String(value);
 }
 
-// 1290 -> "১,২৯০" (bn) or "1,290" (en)
-export function formatNumber(value: number, lang: Locale): string {
-  return localizeDigits(value.toLocaleString("en-US"), lang);
+// 1290 -> "১,২৯০" or "1,290"
+export function formatPrice(value: number, lang: Lang) {
+  return showNumber(value.toLocaleString("en-US"), lang);
 }
 
 // 63.5 -> "63.50", 62 -> "62"
-export function formatDecimal(value: number, lang: Locale): string {
+export function formatDecimal(value: number, lang: Lang) {
   const text = Number.isInteger(value) ? String(value) : value.toFixed(2);
-  return localizeDigits(text, lang);
+  return showNumber(text, lang);
 }
 
-const UNIT_LABELS: Record<Locale, Record<string, string>> = {
-  bn: { kg: "কেজি", litre: "লিটার", dozen: "ডজন", piece: "পিস" },
-  en: { kg: "kg", litre: "litre", dozen: "dozen", piece: "piece" },
-};
-
-export function unitLabel(unit: string, lang: Locale): string {
-  return UNIT_LABELS[lang][unit] ?? unit;
+// the API sends units like "kg" and "litre"
+export function unitName(unit: string, lang: Lang) {
+  const bangla: Record<string, string> = {
+    kg: "কেজি",
+    litre: "লিটার",
+    dozen: "ডজন",
+    piece: "পিস",
+  };
+  return lang === "bn" ? bangla[unit] || unit : unit;
 }
 
-// "148 BDT/kg" or "১৪৮ টাকা/কেজি"
-export function formatPrice(value: number, unit: string, lang: Locale, currency: string): string {
-  return `${formatNumber(value, lang)} ${currency}/${unitLabel(unit, lang)}`;
-}
-
-export function formatChange(change: { dir: string; pct: number }, lang: Locale): string {
+// { dir: "up", pct: 2.1 } -> "▲ ২.১%"
+export function changeText(change: { dir: string; pct: number }, lang: Lang) {
   const arrow = change.dir === "up" ? "▲" : change.dir === "down" ? "▼" : "–";
-  return `${arrow} ${localizeDigits(Math.abs(change.pct), lang)}%`;
+  return `${arrow} ${showNumber(Math.abs(change.pct), lang)}%`;
+}
+
+// today's date, for example "শনিবার, ১০ অক্টোবর, ২০২৬"
+export function getToday(lang: Lang) {
+  return new Date().toLocaleDateString(lang === "bn" ? "bn-BD" : "en-GB", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "Asia/Dhaka",
+  });
 }
