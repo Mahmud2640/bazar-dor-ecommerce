@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# বাজার দর (BazarDor)
 
-## Getting Started
+BazarDor is a Bangla-language web app that shows today's market prices for everyday items: rice, lentils, oil, vegetables, fish, meat, eggs and dairy, and spices. You can see which prices rose or fell, compare prices across markets, and create an account to see full price details.
 
-First, run the development server:
+Built for Programming Hero Assignment 07 from the [Figma design](https://www.figma.com/design/wNhWeMFAjA6tIsNHtI8M0q/Bazardor-_-Assignment-07).
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Live site:** _add your deployed link here_
+- **Repository:** _add your GitHub link here_
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Key features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Live price ticker and category navbar** – a scrolling ticker with emoji, name, price and change percentage, plus category links with an active highlight and today's Bangla date.
+2. **Home page with price movers** – the top 6 risers and top 6 fallers, followed by an all-products grid with search, category filter chips and sorting.
+3. **Category pages** – each category lists its products with a sort dropdown (default, low to high, high to low), skeleton loading and a 404-style empty state.
+4. **Protected product details** – signed-in users see the lowest, highest and average price, plus a table of prices by market. Signed-out visitors are redirected to sign in with a toast.
+5. **Authentication** – email/password sign up and sign in, Google and GitHub login, a profile page and a form to update your name, built with Better Auth.
+6. **Responsive and polished** – works on mobile, tablet and desktop, with Bengali digits for prices, loading skeletons, toast messages and a custom 404 page.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Technologies
 
-## Learn More
+- [Next.js](https://nextjs.org) (App Router) and TypeScript
+- [Tailwind CSS](https://tailwindcss.com) v4
+- [HeroUI](https://www.heroui.com) styles
+- [Better Auth](https://www.better-auth.com) with the MongoDB adapter
+- [MongoDB](https://www.mongodb.com) for users, sessions and accounts
+- [react-hot-toast](https://react-hot-toast.com) for notifications
 
-To learn more about Next.js, take a look at the following resources:
+Price and category data come from the public BazarDor API (`/products`, `/categories`).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Getting started
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Install dependencies:
 
-## Deploy on Vercel
+   ```bash
+   npm install
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+2. Copy `.env.example` to `.env.local` and fill in the values:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+   | Variable | What it is |
+   | --- | --- |
+   | `MONGODB_URI` | MongoDB connection string, e.g. `mongodb://127.0.0.1:27017/bazar-dor` |
+   | `BETTER_AUTH_SECRET` | a long random string (`openssl rand -base64 32`) |
+   | `BETTER_AUTH_URL` / `NEXT_PUBLIC_APP_URL` | the site URL, `http://localhost:3000` locally |
+   | `NEXT_PUBLIC_API_BASE_URL` | the BazarDor API base URL |
+   | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth app (optional) |
+   | `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | GitHub OAuth app (optional) |
+
+   OAuth callback URLs are `<site url>/api/auth/callback/google` and `<site url>/api/auth/callback/github`.
+
+3. Start the dev server:
+
+   ```bash
+   npm run dev
+   ```
+
+   Open [http://localhost:3000](http://localhost:3000).
+
+## Scripts
+
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | start the dev server |
+| `npm run build` | create a production build |
+| `npm run start` | run the production build |
+| `npm run lint` | run ESLint |
+
+## Deploying
+
+Deploy to Vercel. Add the same environment variables in the project settings, and set `BETTER_AUTH_URL` and `NEXT_PUBLIC_APP_URL` to the deployed URL. Use a hosted MongoDB such as Atlas for `MONGODB_URI`, and add the deployed callback URLs to your Google and GitHub OAuth apps.
