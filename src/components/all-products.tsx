@@ -39,13 +39,13 @@ export default function AllProducts({ products, categories }: Props) {
   }, [products, query, category, sort]);
 
   const chipBase =
-    "flex h-6 items-center gap-1.5 rounded-lg px-[9px] text-[11px] font-semibold whitespace-nowrap transition-colors";
-  const chipActive = "border border-primary-strong bg-primary text-primary-content";
+    "flex h-6 items-center gap-1.5 rounded-lg border px-2 text-[11px] font-semibold whitespace-nowrap transition-colors";
+  const chipActive = "border-primary-strong bg-primary text-primary-content";
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-base-300 bg-base-100 p-[17px]">
-        <label className="flex h-10 w-full items-center gap-2 rounded-lg border border-base-content bg-base-100 px-[13px] sm:w-auto">
+      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-base-300 bg-base-100 p-4">
+        <label className="flex h-10 w-full items-center gap-2 rounded-lg border border-base-content bg-base-100 px-3 sm:w-auto">
           <span aria-hidden>🔍</span>
           <input
             type="search"
@@ -62,7 +62,7 @@ export default function AllProducts({ products, categories }: Props) {
             type="button"
             aria-pressed={category === "all"}
             onClick={() => setCategory("all")}
-            className={`${chipBase} ${category === "all" ? chipActive : "hover:bg-base-200"}`}
+            className={`${chipBase} ${category === "all" ? chipActive : "border-transparent hover:bg-base-200"}`}
           >
             {dict.common.all}
           </button>
@@ -72,7 +72,7 @@ export default function AllProducts({ products, categories }: Props) {
               type="button"
               aria-pressed={category === c.slug}
               onClick={() => setCategory(c.slug)}
-              className={`${chipBase} ${category === c.slug ? chipActive : "hover:bg-base-200"}`}
+              className={`${chipBase} ${category === c.slug ? chipActive : "border-transparent hover:bg-base-200"}`}
             >
               <span>{c.icon}</span>
               <span>{categoryName(c.slug, c.nameBn, lang)}</span>

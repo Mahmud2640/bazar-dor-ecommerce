@@ -16,7 +16,7 @@ export default function FormField({ label, error, id, ...props }: Props) {
       <input
         id={fieldId}
         aria-invalid={error ? true : undefined}
-        className={`h-10 w-full rounded-lg border bg-base-100 px-[13px] text-sm outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:opacity-60 ${
+        className={`h-10 w-full rounded-lg border bg-base-100 px-3 text-sm outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:opacity-60 ${
           error ? "border-error" : "border-base-300"
         }`}
         {...props}

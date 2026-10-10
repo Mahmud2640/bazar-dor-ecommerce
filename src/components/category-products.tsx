@@ -22,7 +22,7 @@ export default function CategoryProducts({ products }: { products: Product[] }) 
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-3 rounded-2xl border border-base-300 bg-base-100 p-[17px]">
+      <div className="flex items-center justify-between gap-3 rounded-2xl border border-base-300 bg-base-100 p-4">
         <p className="text-sm" aria-live="polite">
           {fmt(dict.home.totalShown, { n: localizeDigits(sorted.length, lang) })}
         </p>

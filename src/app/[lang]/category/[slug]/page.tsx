@@ -60,7 +60,7 @@ async function CategoryContent({ params, lang }: { params: Params; lang: Locale 
 
   return (
     <div className="flex flex-col gap-6">
-      <header className="rounded-2xl border border-base-300 bg-base-100 p-[21px]">
+      <header className="rounded-2xl border border-base-300 bg-base-100 p-5">
         <div className="flex items-center gap-3">
           <span className="text-4xl leading-10">{category.icon}</span>
           <div>

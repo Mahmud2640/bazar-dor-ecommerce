@@ -54,7 +54,7 @@ function Stat({
   currency: string;
 }) {
   return (
-    <div className="flex flex-col rounded-2xl border border-base-300 bg-base-100 px-[25px] py-[17px]">
+    <div className="flex flex-col rounded-2xl border border-base-300 bg-base-100 px-6 py-4">
       <p className="text-xs leading-[18px]">{label}</p>
       <p className={`font-bold ${tone}`}>
         <span className="text-2xl leading-8">{formatNumber(value, lang)}</span>
@@ -111,7 +111,7 @@ async function ProductContent({ params, lang }: { params: Params; lang: Locale }
         </ol>
       </nav>
 
-      <header className="rounded-2xl border border-base-300 bg-base-100 p-[21px]">
+      <header className="rounded-2xl border border-base-300 bg-base-100 p-5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
           <span className="flex size-20 shrink-0 items-center justify-center rounded-2xl bg-base-200 text-4xl">
             {image}
@@ -145,7 +145,7 @@ async function ProductContent({ params, lang }: { params: Params; lang: Locale }
         </div>
       </header>
 
-      <section className="flex flex-col gap-6 rounded-2xl border border-base-300 bg-base-100 p-[21px]">
+      <section className="flex flex-col gap-6 rounded-2xl border border-base-300 bg-base-100 p-5">
         <div className="flex flex-col gap-3">
           <h2 className="text-lg leading-7 font-semibold">{t.summary}</h2>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-3">

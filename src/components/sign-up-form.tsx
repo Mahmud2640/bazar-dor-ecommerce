@@ -95,7 +95,7 @@ export default function SignUpForm() {
       <button
         type="submit"
         disabled={loading}
-        className={buttonVariants({ variant: "primary", size: "md", fullWidth: true })}
+        className={`${buttonVariants({ variant: "primary", size: "md", fullWidth: true })} h-10`}
       >
         {loading ? dict.common.pleaseWait : t.submit}
       </button>

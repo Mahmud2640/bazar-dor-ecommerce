@@ -63,7 +63,7 @@ function ProfileContent({ user, signingOutRef }: { user: User; signingOutRef: Re
         <p className="text-sm leading-5">{t.subtitle}</p>
       </div>
 
-      <div className="flex flex-col gap-4 rounded-2xl border border-base-300 bg-base-100 p-[25px] sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-4 rounded-2xl border border-base-300 bg-base-100 p-6 sm:flex-row sm:items-center">
         {user.image ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={user.image} alt="" className="h-[70px] w-20 rounded-2xl object-cover" />
@@ -79,13 +79,13 @@ function ProfileContent({ user, signingOutRef }: { user: User; signingOutRef: Re
         <button
           type="button"
           onClick={handleSignOut}
-          className={`${buttonVariants({ variant: "danger-soft", size: "md" })} border border-error bg-transparent text-error`}
+          className={`${buttonVariants({ variant: "danger-soft", size: "md" })} h-10 border border-error bg-transparent text-error`}
         >
           {t.signOut}
         </button>
       </div>
 
-      <section className="flex flex-col gap-3 rounded-2xl border border-base-300 bg-base-100 p-[21px]">
+      <section className="flex flex-col gap-3 rounded-2xl border border-base-300 bg-base-100 p-5">
         <h2 className="text-lg leading-7 font-semibold">{t.info}</h2>
         <form onSubmit={handleUpdate} noValidate className="flex flex-col gap-4 p-0 sm:p-6">
           <FormField
@@ -99,7 +99,7 @@ function ProfileContent({ user, signingOutRef }: { user: User; signingOutRef: Re
           <button
             type="submit"
             disabled={saving}
-            className={buttonVariants({ variant: "primary", size: "md", fullWidth: true })}
+            className={`${buttonVariants({ variant: "primary", size: "md", fullWidth: true })} h-10`}
           >
             {saving ? dict.common.pleaseWait : t.update}
           </button>

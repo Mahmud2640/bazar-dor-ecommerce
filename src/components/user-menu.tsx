@@ -33,13 +33,13 @@ export default function UserMenu() {
       <div className="flex items-center gap-2">
         <Link
           href={href("/signin")}
-          className={`${buttonVariants({ variant: "outline", size: "md" })} max-sm:h-8 max-sm:px-3 max-sm:text-xs`}
+          className={`${buttonVariants({ variant: "outline", size: "md" })} h-10 max-sm:h-8 max-sm:px-3 max-sm:text-xs`}
         >
           {dict.nav.signIn}
         </Link>
         <Link
           href={href("/signup")}
-          className={`${buttonVariants({ variant: "primary", size: "md" })} max-sm:h-8 max-sm:px-3 max-sm:text-xs`}
+          className={`${buttonVariants({ variant: "primary", size: "md" })} h-10 max-sm:h-8 max-sm:px-3 max-sm:text-xs`}
         >
           {dict.nav.signUp}
         </Link>
@@ -47,7 +47,7 @@ export default function UserMenu() {
     );
   }
 
-  const { name, image } = session.user;
+  const { name, email, image } = session.user;
 
   async function handleSignOut() {
     await signOut();
@@ -81,23 +81,27 @@ export default function UserMenu() {
       {open && (
         <div
           role="menu"
-          className="absolute right-0 z-50 mt-2 w-48 rounded-xl border border-base-300 bg-base-100 p-1 shadow-lg"
+          className="absolute right-0 z-50 mt-2 w-64 max-w-[calc(100vw-2rem)] rounded-2xl border border-base-300 bg-base-100 p-2 shadow-xl"
         >
+          <div className="overflow-hidden px-3 py-2">
+            <p className="truncate text-sm leading-[21px] font-semibold">{name}</p>
+            <p className="truncate text-xs leading-4 opacity-70">{email}</p>
+          </div>
           <Link
             href={href("/profile")}
             role="menuitem"
             onClick={() => setOpen(false)}
-            className="block rounded-lg px-3 py-2 text-sm hover:bg-base-200"
+            className="flex h-[33px] items-center rounded-lg px-3 text-sm leading-[21px] hover:bg-base-200"
           >
-            {dict.nav.profile}
+            👤 {dict.meta.profile}
           </Link>
           <button
             type="button"
             role="menuitem"
             onClick={handleSignOut}
-            className="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-base-200"
+            className="flex h-[33px] w-full items-center rounded-lg px-3 text-left text-sm leading-[21px] text-error hover:bg-base-200"
           >
-            {dict.nav.signOut}
+            ↩ {dict.nav.signOut}
           </button>
         </div>
       )}

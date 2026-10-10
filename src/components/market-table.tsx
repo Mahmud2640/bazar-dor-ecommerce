@@ -17,7 +17,7 @@ export default function MarketTable({ markets, lang, dict }: Props) {
     .map((m) => ({ ...m, avg: (m.min + m.max) / 2 }))
     .sort((a, b) => a.avg - b.avg);
 
-  const head = "border-b border-base-content/15 px-4 pt-3 pb-[13px] text-sm leading-[21px] font-bold";
+  const head = "border-b border-base-content/15 px-4 pt-3 pb-3 text-sm leading-[21px] font-bold";
 
   return (
     <div className="overflow-x-auto rounded-2xl border border-base-300 bg-base-100">
@@ -37,11 +37,11 @@ export default function MarketTable({ markets, lang, dict }: Props) {
               key={r.market}
               className={`${i % 2 === 1 ? "bg-base-200" : ""} [&:not(:last-child)>td]:border-b [&:not(:last-child)>td]:border-base-content/15`}
             >
-              <td className="px-4 pt-3 pb-[13px] font-medium">{marketName(r.market, lang)}</td>
-              <td className="px-4 pt-3 pb-[13px]">{divisionName(r.division, lang)}</td>
-              <td className="px-4 pt-3 pb-[13px] text-right">{taka(r.min)}</td>
-              <td className="px-4 pt-3 pb-[13px] text-right">{taka(r.max)}</td>
-              <td className="px-4 pt-3 pb-[13px] text-right font-semibold">{taka(r.avg)}</td>
+              <td className="px-4 pt-3 pb-3 font-medium">{marketName(r.market, lang)}</td>
+              <td className="px-4 pt-3 pb-3">{divisionName(r.division, lang)}</td>
+              <td className="px-4 pt-3 pb-3 text-right">{taka(r.min)}</td>
+              <td className="px-4 pt-3 pb-3 text-right">{taka(r.max)}</td>
+              <td className="px-4 pt-3 pb-3 text-right font-semibold">{taka(r.avg)}</td>
             </tr>
           ))}
         </tbody>

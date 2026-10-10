@@ -16,7 +16,7 @@ export default function EmptyState({ code, title, message, backLabel, homeHref }
       <p className="text-6xl font-bold text-primary">{code}</p>
       <h1 className="text-2xl leading-8 font-bold">{title}</h1>
       <p className="text-sm">{message}</p>
-      <Link href={homeHref} className={`${buttonVariants({ variant: "primary", size: "md" })} mt-2`}>
+      <Link href={homeHref} className={`${buttonVariants({ variant: "primary", size: "md" })} mt-2 h-10`}>
         {backLabel}
       </Link>
     </div>

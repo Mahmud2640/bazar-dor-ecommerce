@@ -20,7 +20,7 @@ export default function ProductCard({ product }: { product: Product }) {
   return (
     <Link
       href={href(`/product/${slug}`)}
-      className="block rounded-2xl border border-base-300 bg-base-100 p-px transition-shadow hover:shadow-md focus-visible:outline-2 focus-visible:outline-primary"
+      className="block rounded-2xl border border-base-300 bg-base-100 transition-shadow hover:shadow-md focus-visible:outline-2 focus-visible:outline-primary"
     >
       <div className="flex flex-col gap-3 p-4">
         <div className="flex items-start gap-3">
@@ -37,9 +37,9 @@ export default function ProductCard({ product }: { product: Product }) {
         <div className="flex items-end justify-between">
           <div className="flex flex-col">
             <span className="text-xs leading-4">{dict.home.todayPrice}</span>
-            <span className="leading-7">
-              <span className="text-xl font-bold">{formatNumber(today, lang)} </span>
-              <span className="text-sm font-medium">{dict.common.currency}</span>
+            <span className="flex h-7 items-baseline gap-1">
+              <span className="text-xl leading-7 font-bold">{formatNumber(today, lang)}</span>
+              <span className="text-sm leading-5 font-medium">{dict.common.currency}</span>
             </span>
           </div>
           <span
